@@ -11,20 +11,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:taller2/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Game app loads correctly', (WidgetTester tester) async {
+    // Cargar la app
+    await tester.pumpWidget(const GameApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verifica que aparece el título del juego
+    expect(find.text('🎮 Learning RPG'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verifica que existe nivel
+    expect(find.textContaining('Nivel'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verifica botones de navegación
+    expect(find.text('⬅ Atrás'), findsOneWidget);
+    expect(find.text('Siguiente ➡'), findsOneWidget);
   });
 }

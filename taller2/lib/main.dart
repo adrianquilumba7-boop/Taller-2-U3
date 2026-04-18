@@ -1,121 +1,207 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const GameApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class GameApp extends StatelessWidget {
+  const GameApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        colorScheme: ColorScheme.dark(
+          primary: Colors.amber,
+          secondary: Colors.cyanAccent,
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const GameHome(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class GameHome extends StatefulWidget {
+  const GameHome({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<GameHome> createState() => _GameHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _GameHomeState extends State<GameHome> {
+  final PageController _controller = PageController();
 
-  void _incrementCounter() {
+  int level = 1;
+  int xp = 0;
+
+  final missions = [
+    {"title": "Tutorial", "xp": 20, "desc": "Aprende lo básico"},
+    {"title": "Exploración", "xp": 30, "desc": "Navega la app"},
+    {"title": "Práctica", "xp": 40, "desc": "Completa ejercicios"},
+    {"title": "Boss Final", "xp": 50, "desc": "Desbloquea el final"},
+  ];
+
+  void addXP(int value) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      xp += value;
+
+      if (xp >= 100) {
+        level++;
+        xp = xp - 100;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("🔥 Subiste a nivel $level"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     });
+  }
+
+  void next() {
+    if (_controller.page!.toInt() < missions.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+
+      addXP(missions[_controller.page!.toInt()]["xp"] as int);
+    }
+  }
+
+  void back() {
+    if (_controller.page!.toInt() > 0) {
+      _controller.previousPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    double xpBar = xp / 100;
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      appBar: AppBar(title: const Text("🎮 Learning RPG"), centerTitle: true),
+
+      body: Column(
+        children: [
+          // 🧠 HUD (Nivel + XP)
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Text(
+                  "Nivel $level",
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                LinearProgressIndicator(
+                  value: xpBar,
+                  minHeight: 12,
+                  backgroundColor: Colors.grey[800],
+                  color: Colors.amber,
+                ),
+
+                const SizedBox(height: 5),
+
+                Text("XP: $xp / 100"),
+              ],
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          ),
+
+          // 🎮 MISIONES (PageView)
+          Expanded(
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: missions.length,
+              itemBuilder: (context, index) {
+                final mission = missions[index];
+
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  margin: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [Colors.black, Colors.blueGrey.shade900],
+                    ),
+                    border: Border.all(color: Colors.amber, width: 2),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.sports_esports,
+                          size: 80,
+                          color: Colors.amber,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Text(
+                          mission["title"].toString(),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          mission["desc"].toString(),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Text(
+                          "+${mission["xp"]} XP",
+                          style: const TextStyle(
+                            color: Colors.cyanAccent,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 🎮 CONTROLES
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: back,
+                    child: const Text("⬅ Atrás"),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: next,
+                    child: const Text("Siguiente ➡"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
